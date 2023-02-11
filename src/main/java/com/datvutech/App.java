@@ -5,9 +5,12 @@ import java.math.BigDecimal;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import com.datvutech.config.HibernatePart2;
+import com.datvutech.app.config.HibernatePart2;
 import com.datvutech.data.entity.Bid;
 import com.datvutech.data.entity.Item;
+import com.datvutech.data.inheritance.joined.BankAccount;
+import com.datvutech.data.inheritance.joined.BillingDetail;
+import com.datvutech.data.inheritance.joined.CreditCard;
 
 public class App {
     public static void main(String[] args) {
@@ -16,13 +19,17 @@ public class App {
 
         // createDummyItemBid(session);
         // ItemBidSummary ibSummary = session.find(ItemBidSummary.class, 1L);
-        Item item1 = session.find(Item.class, 1L);
+        // Item item1 = session.find(Item.class, 1L);
         // item1.setBuyNowPrice(MonetaryAmount.fromString("10000 USD"));
         // Bid bid1 = session.find(Bid.class, 1L);
-        System.out.println(item1);
+        // System.out.println(item1);
         // System.out.println(bid1);
         // BriefItem briefItem1 = session.find(BriefItem.class, 1L);
         // User user1 = session.find(User.class, 1L);
+        session.beginTransaction();
+        BillingDetail bd  = session.find(CreditCard.class, 1L);
+        session.delete(bd);
+        session.getTransaction().commit();
         session.close();
         System.out.println("Hello World!");
     }

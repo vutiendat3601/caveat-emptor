@@ -31,6 +31,8 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
 import com.datvutech.data.converter.MonetaryAmountConverter;
+import com.datvutech.data.embeddable.Dimension;
+import com.datvutech.data.embeddable.Weight;
 import com.datvutech.data.usertype.MonetaryAmount;
 import com.datvutech.data.usertype.MonetaryAmountUserType;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,9 +47,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @TypeDefs({
-        @TypeDef(name = "monetary_amount_usd", typeClass = MonetaryAmountUserType.class, parameters = {
-                @Parameter(name = "convertTo", value = "USD")
-        })
+                @TypeDef(name = "monetary_amount_usd", typeClass = MonetaryAmountUserType.class, parameters = {
+                                @Parameter(name = "convertTo", value = "USD")
+                })
 })
 /*
  * Dynamic SQL generation,
@@ -61,100 +63,104 @@ import lombok.Setter;
 @RequiredArgsConstructor
 @Getter
 public class Item implements Serializable {
-    @Id
-    @GeneratedValue(generator = "ID_GENERATOR") /* For generate value, use with @Id */
-    private Long id;
+        @Id
+        @GeneratedValue(generator = "ID_GENERATOR") /* For generate value, use with @Id */
+        private Long id;
 
-    @NonNull
-    @Setter
-    @Access(AccessType.PROPERTY) /* Requires getter, setter */
-    private String name;
+        @NonNull
+        @Setter
+        @Access(AccessType.PROPERTY) /* Requires getter, setter */
+        private String name;
 
-    /* Generated and default property values, usually for the first time */
-    @Generated(GenerationTime.INSERT)
-    @Convert(converter = MonetaryAmountConverter.class)
-    @ColumnDefault("'1.0 USD'")
-    @Column(name = "initial_price", nullable = false)
-    private MonetaryAmount initialPrice;
+        /* Generated and default property values, usually for the first time */
+        @Generated(GenerationTime.INSERT)
+        @Convert(converter = MonetaryAmountConverter.class)
+        @ColumnDefault("'1.0 USD'")
+        @Column(name = "initial_price", nullable = false)
+        private MonetaryAmount initialPrice;
 
-    @Type(type = "monetary_amount_usd")
-    @Columns(columns = {
-            /* The order is important */
-            @Column(name = "initialprice_amount"),
-            @Column(name = "initialprice_currency", length = 3)
-    })
-    private MonetaryAmount initialPriceUSD;
+        @Type(type = "monetary_amount_usd")
+        @Columns(columns = {
+                        /* The order is important */
+                        @Column(name = "initialprice_amount"),
+                        @Column(name = "initialprice_currency", length = 3)
+        })
+        private MonetaryAmount initialPriceUSD;
 
-    @Setter
-    @Column(name = "buy_now_price", length = 64)
-    @Convert(converter = MonetaryAmountConverter.class) // Use to specify converter for data type
-    private MonetaryAmount buyNowPrice;
+        @Setter
+        @Column(name = "buy_now_price", length = 64)
+        @Convert(converter = MonetaryAmountConverter.class) // Use to specify converter for data type
+        private MonetaryAmount buyNowPrice;
 
-    @Columns(columns = {
-            @Column(name = "buynowprice_amount"),
-            @Column(name = "buynowprice_currency", length = 3)
-    })
-    @Type(type = "monetary_amount_usd")
-    private MonetaryAmount buyNowPriceUSD;
+        @Columns(columns = {
+                        @Column(name = "buynowprice_amount"),
+                        @Column(name = "buynowprice_currency", length = 3)
+        })
+        @Type(type = "monetary_amount_usd")
+        private MonetaryAmount buyNowPriceUSD;
 
-    /*
-     * Don't allowed INSERT OR UPDATE by statements.
-     * Delegate for
-     * database
-     */
-    @Column(name = "last_modified", updatable = false, insertable = false)
-    @Generated(GenerationTime.ALWAYS) /* Used with existed triggers */
-    private ZonedDateTime lastModified;
+        /*
+         * Don't allowed INSERT OR UPDATE by statements.
+         * Delegate for
+         * database
+         */
+        @Column(name = "last_modified", updatable = false, insertable = false)
+        @Generated(GenerationTime.ALWAYS) /* Used with existed triggers */
+        private ZonedDateTime lastModified;
 
-    @Formula("(SELECT avg(b.amount) " +
-            "FROM bids b " +
-            "WHERE b.item_id = id)")
-    private BigDecimal averageBidAmount;
-    /*
-     * Binary large object (image) , can’t access LOB properties without a database
-     * connection
-     */
-    @Lob
-    private Blob imageBlob;
+        @Formula("(SELECT avg(b.amount) " +
+                        "FROM bids b " +
+                        "WHERE b.item_id = id)")
+        private BigDecimal averageBidAmount;
+        /*
+         * Binary large object (image) , can’t access LOB properties without a database
+         * connection
+         */
+        @Lob
+        private Blob imageBlob;
 
-    /*
-     * Character large object, can’t access LOB properties without a database
-     * connection
-     */
-    @Lob
-    private Clob descriptionClob;
+        /*
+         * Character large object, can’t access LOB properties without a database
+         * connection
+         */
+        @Lob
+        private Clob descriptionClob;
 
-    // @Type(type = "yes_no") -> Map to an other sql type
-    @ColumnDefault("false")
-    private boolean verified;
+        // @Type(type = "yes_no") -> Map to an other sql type
+        @ColumnDefault("false")
+        private boolean verified;
 
-    @Formula("(SELECT count(*) " +
-            "FROM bids b " +
-            "WHERE b.item_id = id)")
-    private long numberOfBids;
+        @Formula("(SELECT count(*) " +
+                        "FROM bids b " +
+                        "WHERE b.item_id = id)")
+        private long numberOfBids;
 
-    @NonNull
-    @NotNull
-    @Setter
-    /* Convert variant measurement units */
-    @ColumnTransformer(read = "imperial_weight / 2.20462", write = "? * 2.20462")
-    @Column(name = "imperial_weight")
-    private Double metricWeight;
+        @NonNull
+        @NotNull
+        @Setter
+        /* Convert variant measurement units */
+        @ColumnTransformer(read = "imperial_weight / 2.20462", write = "? * 2.20462")
+        @Column(name = "imperial_weight")
+        private Double metricWeight;
 
-    // @Transient /* Totally ignore, both persit and load */
-    // private Set<Bid> bids = new HashSet<>();
+        private Dimension dimension;
 
-    /* @Override */
-    @Override
-    public String toString() {
-        String json = "{}";
-        try {
-            json = new ObjectMapper().registerModule(new JavaTimeModule())
-                    .writerWithDefaultPrettyPrinter()
-                    .writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+        private Weight weight;
+
+        // @Transient /* Totally ignore, both persit and load */
+        // private Set<Bid> bids = new HashSet<>();
+
+        /* @Override */
+        @Override
+        public String toString() {
+                String json = "{}";
+                try {
+                        json = new ObjectMapper().registerModule(new JavaTimeModule())
+                                        .writerWithDefaultPrettyPrinter()
+                                        .writeValueAsString(this);
+                } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                }
+                return json;
         }
-        return json;
-    }
 }
