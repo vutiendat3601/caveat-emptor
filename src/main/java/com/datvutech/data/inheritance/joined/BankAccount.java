@@ -20,14 +20,16 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "bank_account")
 @Data
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(callSuper = true)
 @DiscriminatorValue("ba")
-@OnDelete(action = OnDeleteAction.CASCADE)
+// @OnDelete(action = OnDeleteAction.CASCADE)
 public class BankAccount extends BillingDetail {
 
-    public BankAccount(String owner, String bankName, String bankDescription, ZonedDateTime openedDate) {
+    public BankAccount(String owner, String accountNumber, String bankName, String bankDescription,
+            ZonedDateTime openedDate) {
         super(owner);
+        this.accountNumber = accountNumber;
         this.bankName = bankName;
         this.bankDescription = bankDescription;
         this.openedDate = openedDate;

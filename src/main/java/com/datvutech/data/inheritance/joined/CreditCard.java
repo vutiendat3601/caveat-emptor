@@ -21,11 +21,10 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 // @PrimaryKeyJoinColumn(name = "creditcard_id") /* For custom PK and FK name */
-@DiscriminatorValue("cc")
+@DiscriminatorValue("cc") /* For identify which subclass in SQL */
 // @SecondaryTable(name = "credit_card") // use for mix strategy
-@OnDelete(action = OnDeleteAction.CASCADE)
 public class CreditCard extends BillingDetail {
 
     public CreditCard(String owner, String cardNumber, int expMonth, int expYear) {

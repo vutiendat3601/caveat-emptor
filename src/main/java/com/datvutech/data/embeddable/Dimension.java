@@ -19,11 +19,11 @@ public class Dimension extends Measurement {
     private BigDecimal dimensionDepth;
 
     @NotNull
-@Column(name = "dimension_height")
+    @Column(name = "dimension_height")
     private BigDecimal dimensionHeight;
 
     @NotNull
-@Column(name = "dimension_width")
+    @Column(name = "dimension_width")
     private BigDecimal dimensionWidth;
 
 }
