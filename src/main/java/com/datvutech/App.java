@@ -8,9 +8,6 @@ import org.hibernate.SessionFactory;
 import com.datvutech.app.config.HibernatePart2;
 import com.datvutech.data.entity.Bid;
 import com.datvutech.data.entity.Item;
-import com.datvutech.data.entity.User;
-import com.datvutech.data.inheritance.joined.BillingDetail;
-import com.datvutech.data.inheritance.joined.CreditCard;
 
 public class App {
     public static void main(String[] args) {

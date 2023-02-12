@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-@Embeddable
+@Embeddable/* Embedable convert to properties of entity use it */
 public class Address {
     private String street;
 
