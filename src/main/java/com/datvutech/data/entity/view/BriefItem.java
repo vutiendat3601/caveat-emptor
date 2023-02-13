@@ -18,6 +18,7 @@ import com.datvutech.data.usertype.MonetaryAmount;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Subselect("SELECT " +
         "i.id, " +
@@ -29,10 +30,11 @@ import lombok.NoArgsConstructor;
         "FROM " +
         "items i")
 @Immutable
-@Getter
 @Entity
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class BriefItem implements Serializable{
+@Getter
+@NoArgsConstructor(access = AccessLevel.PACKAGE)
+@ToString
+public class BriefItem implements Serializable {
     @Id
     private Long id;
 
@@ -41,7 +43,7 @@ public class BriefItem implements Serializable{
     @Convert(converter = MonetaryAmountConverter.class)
     @Column(name = "initial_price")
     private MonetaryAmount initialPrice;
-    
+
     @Convert(converter = MonetaryAmountConverter.class)
     @Column(name = "buy_now_price")
     private MonetaryAmount buyNowPrice;

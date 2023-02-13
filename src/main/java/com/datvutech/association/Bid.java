@@ -1,4 +1,4 @@
-package com.datvutech.data.entity;
+package com.datvutech.association;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -12,22 +12,20 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Immutable;
-
-// import org.hibernate.annotations.Immutable;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
-@Getter
-@ToString
-@NoArgsConstructor(access = AccessLevel.PACKAGE)
-@Immutable /* Making an entity immutable(never needs to execute UPDATE statements) */
 @Table(name = "bids")
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PACKAGE)
 public class Bid implements Serializable {
+    public Bid(BigDecimal amount, Item item) {
+        this.amount = amount;
+        this.item = item;
+        this.item.addBid(this);
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,11 +36,4 @@ public class Bid implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
     private Item item;
-
-    public Bid(BigDecimal amount, Item item) {
-        this.amount = amount;
-        this.item = item;
-        this.item.addBid(this);
-    }
-
 }

@@ -15,9 +15,6 @@ import com.datvutech.data.entity.Item;
 import com.datvutech.data.entity.User;
 import com.datvutech.data.entity.view.BriefItem;
 import com.datvutech.data.entity.view.ItemBidSummary;
-import com.datvutech.data.inheritance.joined.BankAccount;
-import com.datvutech.data.inheritance.joined.BillingDetail;
-import com.datvutech.data.inheritance.joined.CreditCard;
 
 public class HibernatePart2 {
     private static final SessionFactory SESSION_FACTORY;
@@ -55,10 +52,7 @@ public class HibernatePart2 {
         conf.addAnnotatedClass(ItemBidSummary.class);
         conf.addAnnotatedClass(User.class);
         conf.addAnnotatedClass(BriefItem.class);
-        conf.addAnnotatedClass(CreditCard.class);
-        conf.addAnnotatedClass(BankAccount.class);
-        conf.addAnnotatedClass(BillingDetail.class);
-
+    
         StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
                 .applySettings(conf.getProperties())
                 .build();

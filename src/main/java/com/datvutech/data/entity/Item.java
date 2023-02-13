@@ -5,15 +5,23 @@ import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -35,16 +43,12 @@ import com.datvutech.data.embeddable.Dimension;
 import com.datvutech.data.embeddable.Weight;
 import com.datvutech.data.usertype.MonetaryAmount;
 import com.datvutech.data.usertype.MonetaryAmountUserType;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @TypeDefs({
                 @TypeDef(name = "monetary_amount_usd", typeClass = MonetaryAmountUserType.class, parameters = {
@@ -57,17 +61,30 @@ import lombok.Setter;
  */
 @DynamicInsert
 @DynamicUpdate
+
 @Table(name = "items") /* Customize all table with strategy by implement PhysicalNamingStrategy */
 @Entity
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-@RequiredArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PACKAGE)
 @Getter
+@ToString
 public class Item implements Serializable {
+
+        public Item(String name, Dimension dimension, Double metricWeight) {
+                this.name = name;
+                this.dimension = dimension;
+                this.metricWeight = metricWeight;
+        }
+
+        public Item(String name, Dimension dimension, Weight weight) {
+                this.name = name;
+                this.dimension = dimension;
+                this.weight = weight;
+        }
+
         @Id
         @GeneratedValue(generator = "ID_GENERATOR") /* For generate value, use with @Id */
         private Long id;
 
-        @NonNull
         @Setter
         @Access(AccessType.PROPERTY) /* Requires getter, setter */
         private String name;
@@ -110,8 +127,9 @@ public class Item implements Serializable {
 
         @Formula("(SELECT avg(b.amount) " +
                         "FROM bids b " +
-                        "WHERE b.item_id = id)")
+                        "WHERE b.item_id = id)") /* Dynamic load from database */
         private BigDecimal averageBidAmount;
+
         /*
          * Binary large object (image) , can’t access LOB properties without a database
          * connection
@@ -132,10 +150,9 @@ public class Item implements Serializable {
 
         @Formula("(SELECT count(*) " +
                         "FROM bids b " +
-                        "WHERE b.item_id = id)")
+                        "WHERE b.item_id = id)") /* Dynamic load from database */
         private long numberOfBids;
 
-        @NonNull
         @NotNull
         @Setter
         /* Convert variant measurement units */
@@ -147,20 +164,36 @@ public class Item implements Serializable {
 
         private Weight weight;
 
+        /*
+         * Persistent collections are always
+         * optional—a feature
+         */
+        @ElementCollection /* Marks collection for a value-type */
+        @CollectionTable(name = "images", joinColumns = @JoinColumn(name = "item_id")) /* read-only table */
+        @Column(name = "file_name")
+        private Set<String> images = new HashSet<>(); /* Should be initialized */
+
+        public void addImage(String fileName) {
+                if (fileName == null || fileName.length() < 1) {
+                        throw new IllegalArgumentException("file name error");
+                }
+                images.add(fileName);
+        }
+
+        @Getter(AccessLevel.NONE)
+        @OneToMany(mappedBy = "item", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+        private Set<Bid> bids = new HashSet<>();
+
+        public void addBid(Bid bid) {
+                if (bid == null) {
+                        throw new IllegalArgumentException("Can't add null bid");
+                } else if (bid.getItem() == null) {
+                        throw new NullPointerException("Item is null");
+                }
+                bids.add(bid);
+        }
+
         // @Transient /* Totally ignore, both persit and load */
         // private Set<Bid> bids = new HashSet<>();
 
-        /* @Override */
-        @Override
-        public String toString() {
-                String json = "{}";
-                try {
-                        json = new ObjectMapper().registerModule(new JavaTimeModule())
-                                        .writerWithDefaultPrettyPrinter()
-                                        .writeValueAsString(this);
-                } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                }
-                return json;
-        }
 }
